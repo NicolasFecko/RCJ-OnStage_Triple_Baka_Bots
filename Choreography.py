@@ -354,15 +354,26 @@ def dance():
 
 # Main program starting here:
 led.value(1) # Due to problems with the USB port on the Pico we indicate successful start of the prgram by turning this LED on
+time.sleep(0.5) # Give Pali time to React
 move_to_neutral()
 led.value(0) # After indicating startup and oving the robot to the neural position we can turn the LED off
-time.sleep(5) # We wait 5 seconds to allow us to get out of the stage
+time.sleep(4.5) # We wait 5 seconds to allow us to get out of the stage
+
 for _ in range(2): # We repeat the dance choreography 2 times
     dance()
     
+    
+
 time.sleep(0.7)
+led.value(1) # Turn the LED on for some time to indicate the end of the performance to us and signal for us to come onto the stage for a final bow
 move_to_neutral()
 time.sleep(1)
+led.value(0)
 wave_left() # We wave the judges goodbye
 time.sleep(0.7)
 turnoff_servo() # At the end we can rest the servos
+
+
+
+
+
