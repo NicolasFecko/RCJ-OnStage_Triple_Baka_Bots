@@ -26,15 +26,27 @@ RSR = PWM(Pin(13))
 LSR = PWM(Pin(18))
 LE = PWM(Pin(4))
 RE = PWM(Pin(11))
-LED = Pin(25, Pin.OUT)
+LED = Pin(25, Pin.OUT) 
 
-# Frequencies... idk why 50 but 50 it is
+LH = PWM(Pin(16)) # New Servo for the left hand
+
+
+# Wheel initialization
+right_wheel_backward = Pin(22, Pin.OUT) # 
+right_wheel_forward = Pin(3, Pin.OUT) # Connects to RW
+
+left_wheel_forward = Pin(20, Pin.OUT) # Works
+left_wheel_backward = Pin(19, Pin.OUT) # Works
+
+
+# Frequencies...
 RSL.freq(50)
 LSL.freq(50)
 RSR.freq(50)
 LSR.freq(50)
 LE.freq(50)
 RE.freq(50)
+
 
 def set_angle(servo, angle):
     min_duty = 1638
@@ -52,6 +64,7 @@ def move_to_neutral():
     set_angle(LSR, 190) # Hear me out, I know this is not supposed to go over 180 but it just works... And if it works we don't touch it
     set_angle(LE, 120)
     set_angle(RE, 0)
+    set_angle(LH, 0)
     time.sleep(1)
     
 def turnoff_servo():
@@ -61,6 +74,7 @@ def turnoff_servo():
     LSR.deinit()
     LE.deinit()
     RE.deinit()
+    LH.deinit()
 
 # doesn't lift far enough but let that be a future problem
 # 0 = as far right as it can reach for now. 
@@ -99,14 +113,25 @@ def move_left_elbow(angle):
 def move_right_elbow(angle):
     set_angle(RE, angle)
 
+# Loose = 180
+# Clenched = 0
+def move_left_hand(angle):
+    set_angle(LH, angle)
+
 # Optimilized this to run via a loop instead of code spam
 def wave_left():
+    move_left_hand(0)
     move_left_arm_forward(30)
-    for _ in range(4):
+    move_left_elbow(20)
+    time.sleep(0.7)
+    move_left_elbow(120)
+
+    for _ in range(6):
         lift_left_arm(0)
-        time.sleep(0.4)
-        lift_left_arm(20)
-        time.sleep(0.4)
+        time.sleep(0.6)
+        lift_left_arm(30)
+        time.sleep(0.6)
+        
         
     move_to_neutral()
 
@@ -211,6 +236,13 @@ def both_forearms_to_chest():
 
     time.sleep(1)
 
+# A new function for the hands
+def clench_fist():
+    move_left_hand(0) # Clench fist
+    time.sleep(0.5)
+    move_left_hand(180) # release pressure
+    #time.sleep(1)
+
 """
   _____                         __  __                       _____           _   _             
  |  __ \                       |  \/  |                     / ____|         | | (_)            
@@ -249,9 +281,9 @@ def train_whistle_both():
 def elbows_up_move():
     for _ in range(4): # btw, this just repeats the move 4 times is anybody cares... 
         elbows_up_pose()
-        # lower to neutral
         move_left_elbow(120)
         move_right_elbow(0)
+        clench_fist()
         time.sleep(0.6)
 
 def left_forearm_to_chest_move():
@@ -276,10 +308,43 @@ def right_forearm_to_chest_move():
         time.sleep(1)
 
 
+# Wheel movement functions
+def wheel_forward(speed):
+    left_wheel_forward.value(speed) # Reccommend speed 10
+    right_wheel_forward.value(speed)
+    time.sleep(3)
+    left_wheel_forward.value(0)
+    right_wheel_forward.value(0)
+
+def wheel_backward(speed):
+    left_wheel_backward.value(speed) # Reccomend speed 10
+    right_wheel_backward.value(speed)
+    time.sleep(3)
+    left_wheel_backward.value(0)
+    right_wheel_backward.value(0)
+
+def rotate_90_right(speed):
+    left_wheel_forward.value(speed) # Reccomend speed 10
+    right_wheel_backward.value(speed)
+    time.sleep(2)
+    left_wheel_forward.value(0)
+    right_wheel_backward.value(0)
+
+def rotate_90_left(speed):
+    left_wheel_backward.value(speed) # Yup, Imma Recommend 10 again
+    right_wheel_forward.value(speed)
+    time.sleep(2)
+    left_wheel_backward.value(0) # Btw, this decreaces the motor speed to 0 which stops it
+    right_wheel_forward.value(0)
+
+
 # Main choreography... idk how to dance
+# This function takes all these different poses, dance moves and motor intializations and puts them together in a sort of a dance choreography
 def dance():
+    wheel_forward(5)
     airplane_pose()
-    time.sleep(1)
+    time.sleep(0.6)
+    wheel_backward(5)
     move_to_neutral()
     time.sleep(0.5)
     T_pose()
@@ -290,8 +355,10 @@ def dance():
     time.sleep(0.5)
     move_to_neutral()
     time.sleep(0.5)
+    wheel_forward(5)
     airplane_pose()
-    time.sleep(1)
+    time.sleep(0.6)
+    wheel_backward(5)
     move_to_neutral()
     time.sleep(0.5)
     elbows_up_move()
@@ -314,14 +381,14 @@ def dance():
     time.sleep(0.5)
     
     
-    
+    # End it and move to neutral
     time.sleep(0.8)
     move_to_neutral()
     
+
     
     
-    
-"""
+""" If you stare long enough into the code the code will stare back into you
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⣫⣟⢯⡓⢆⡼⣙⢮⡹⢭⢿⡣⡙⡜⡸⢙⣧⣓⠨⢍⢻⣷⣄⠐⠌⢂⠇⣊⠹⢳⣟⣿⣟⣯⣝⡝⢯⢻⡝⣟⠿⣿⣿⣿⣿⣿⣿⣿⣽⣫⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⣴⢻⣌⠳⣉⠦⠓⡌⠦⡑⢎⠺⡇⠀⠑⠠⠁⢺⣷⣄⠀⠂⢻⣟⣧⡀⠀⡈⠀⠄⠈⠹⣎⢻⣽⡞⣿⢮⣣⠞⣭⣛⢶⣹⡻⣿⣿⣿⣿⣿⣿⣿⣘⡻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣻⣿⣿
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢏⡼⡏⡶⢈⠇⢁⠊⠡⠈⠄⠁⠌⠓⡽⠀⠠⠁⢀⠂⣏⠻⣄⠀⠄⢷⠩⢿⣄⠀⠐⠀⡈⠀⠸⡆⢻⡽⠾⣍⡟⡻⣶⣭⣟⣷⣻⡷⣯⣿⣿⣿⣿⣿⣿⣶⡉⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
@@ -352,28 +419,64 @@ def dance():
 """
 
 
+
+# A function created at 4am and it looked good so it got implemented as a feature
+def four_am():
+    wheel_forward(5)
+    elbows_up_move()
+    #time.sleep(1)
+    wheel_backward(5)
+    move_to_neutral()
+    time.sleep(0.5)
+    turnoff_servo()
+    
+    
+# Demonstarion of the 4 chosen features
+def feature1():
+    left_forearm_to_chest_move() # showcases one of the moves of the choreography to prove fully working feature
+    time.sleep(0.5)
+    move_to_neutral()
+    time.sleep(0.5)
+    turnoff_servo()
+    
+#Feature 2 is the head part with Live2D implementation
+    
+def feature3():
+    clench_fist() # The fingers
+    time.sleep(1.5)
+    move_to_neutral()
+    time.sleep(0.3)
+    turnoff_servo()
+    
+# Feature 4 is the wheels
+def feature4():
+    wheel_forward(5)
+    time.sleep(0.3)
+    wheel_backward(5)
+    
+    
+    
+"""
 # Main program starting here:
-led.value(1) # Due to problems with the USB port on the Pico we indicate successful start of the prgram by turning this LED on
+clench_fist()
+LED.value(1) # Due to problems with the USB port on the Pico we indicate successful start of the prgram by turning this LED on
 time.sleep(0.5) # Give Pali time to React
 move_to_neutral()
-led.value(0) # After indicating startup and oving the robot to the neural position we can turn the LED off
-time.sleep(4.5) # We wait 5 seconds to allow us to get out of the stage
+LED.value(0) # After indicating startup and oving the robot to the neural position we can turn the LED off
+time.sleep(4) # We wait 5 seconds to allow us to get out of the stage
 
 for _ in range(2): # We repeat the dance choreography 2 times
     dance()
-    
-    
 
 time.sleep(0.7)
-led.value(1) # Turn the LED on for some time to indicate the end of the performance to us and signal for us to come onto the stage for a final bow
+LED.value(1) # Turn the LED on for some time to indicate the end of the performance to us and signal for us to come onto the stage for a final bow
 move_to_neutral()
 time.sleep(1)
-led.value(0)
+LED.value(0)
 wave_left() # We wave the judges goodbye
 time.sleep(0.7)
-turnoff_servo() # At the end we can rest the servos
+turnoff_servo()
+"""
 
-
-
-
+left_wheel_forward.value(5) 
 
