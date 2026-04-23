@@ -450,13 +450,13 @@ def feature3():
     
 # Feature 4 is the wheels
 def feature4():
-    wheel_forward(5)
+    wheel_forward(2)
     time.sleep(0.3)
-    wheel_backward(5)
+    wheel_backward(2)
     
     
     
-"""
+
 # Main program starting here:
 clench_fist()
 LED.value(1) # Due to problems with the USB port on the Pico we indicate successful start of the prgram by turning this LED on
@@ -476,7 +476,3 @@ LED.value(0)
 wave_left() # We wave the judges goodbye
 time.sleep(0.7)
 turnoff_servo()
-"""
-
-left_wheel_forward.value(5) 
-
